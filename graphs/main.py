@@ -1,30 +1,28 @@
 import json
 
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 
 def plot(durations):
-    x = [i + 1 for i, _ in enumerate(durations['docker_arm64'])]
-    for key, duration in durations.items():
-        plt.plot(x, [d / 1000 for d in duration], label=key, marker='o')
+    fig = go.Figure()
+    for arch, d in durations.items():
+        fig.add_trace(go.Scatter(x=list(range(1, len(d) + 1)), y=d,
+                                 mode='lines+markers',
+                                 name=arch))
 
-    plt.ylim([20, 30])
+    fig.update_layout(title='Cold start - Rust and JavaScript comparison',
+                      xaxis_title='Execution',
+                      yaxis_title='Duration (milliseconds)',
+                      xaxis_tickformat=',d',
+                      xaxis=dict(showgrid=False),
+                      yaxis=dict(showgrid=False))
 
-    # naming the x axis
-    plt.xlabel('Run')
-    # naming the y axis
-    plt.ylabel('Time (seconds)')
-
-    # giving a title to my graph
-    plt.title('Lambda Execution Time')
-
-    plt.legend()
-
-    # function to show the plot
-    plt.show()
+    fig.show()
 
 
 if __name__ == '__main__':
-    with open('durations.json') as f:
-        plot(json.load(f))
-        # print(list(enumerate(json.load(f)['docker_arm64'])))
+    with open('startup-js.json') as js, open('startup-rs.json') as rs:
+        durations = json.load(js)
+        # durations = json.load(rs)
+        durations.update(json.load(rs))
+        plot(durations)
