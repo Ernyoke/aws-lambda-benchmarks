@@ -7,9 +7,8 @@
     "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
     "build-debug": "npm run build --",
     "build-release": "npm run build -- --release",
-    "cross-build": "cargo-cp-artifact -nc index.node -- cross build --message-format=json-render-diagnostics",
-    "build-x86": "npm run cross-build -- --release --target x86_64-unknown-linux-gnu", 
-    "build-arm64": "npm run cross-build -- --release --target aarch64-unknown-linux-gnu",
+    "build-x86": "cross build --release --target x86_64-unknown-linux-gnu && cp ./target/x86_64-unknown-linux-gnu/release/libcompute_pi_rs_lib.so index.node",
+    "build-arm64": "cross build --release --target aarch64-unknown-linux-gnu && cp ./target/aarch64-unknown-linux-gnu/release/libcompute_pi_rs_lib.so index.node",
     "install": "npm run build-release",
     "test": "cargo test"
   },

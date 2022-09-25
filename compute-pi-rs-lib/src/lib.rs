@@ -10,23 +10,32 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     Ok(())
 }
 
+// Create a singleton runtime used for async function calls
 fn runtime<'a, C: Context<'a>>(cx: &mut C) -> NeonResult<&'static Runtime> {
     static RUNTIME: OnceCell<Runtime> = OnceCell::new();
     RUNTIME.get_or_try_init(|| Runtime::new().or_else(|err| cx.throw_error(err.to_string())))
 }
 
 fn generate(mut cx: FunctionContext) -> JsResult<JsPromise> {
+    // Transform the JavaScript types into Rust types
     let js_limit = cx.argument::<JsNumber>(0)?;
     let limit = js_limit.value(&mut cx);
 
+    // Instantiate the runtime
     let rt = runtime(&mut cx)?;
+
+    // Create a JavaScript promise used for return. Since our function can take a longer period
+    // to execute, it would be wise to not block the main thread of the JS host
     let (deferred, promise) = cx.promise();
     let channel = cx.channel();
 
+    // Spawn a new thread and attempt to compute the first N digits of PI
     rt.spawn(async move {
         let digits = generate_pi(limit.to_i64().unwrap());
         deferred.settle_with(&channel, move |mut cx| {
             let res: Handle<JsArray> = JsArray::new(&mut cx, digits.len() as u32);
+
+            // Place the first N digits into a JavaScript array and hand it back to the caller
             for (i, &digit) in digits.iter().enumerate() {
                 let val = cx.number(f64::from(digit));
                 res.set(&mut cx, i as u32, val);

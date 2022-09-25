@@ -11,7 +11,7 @@
     "lambda"
   ],
   "dependencies": {
-    "compute-pi-rs": "file:../compute-pi-rs-lib"
+    "compute-pi-rs-lib": "file:../compute-pi-rs-lib"
   },
   "author": "Ervin Szilagyi",
   "license": "ISC"
