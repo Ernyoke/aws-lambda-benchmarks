@@ -1,4 +1,4 @@
-FROM rust:1.63-buster as builder
+FROM rust:1.84-buster AS builder
 
 WORKDIR /build
 
@@ -6,11 +6,11 @@ ADD Cargo.toml Cargo.toml
 ADD Cargo.lock Cargo.lock
 ADD src src
 
-RUN rustup target add x86_64-unknown-linux-musl && cargo build --release --target x86_64-unknown-linux-musl
+RUN rustup target add x86_64-unknown-linux-gnu && cargo build --release --target x86_64-unknown-linux-gnu
 
 # copy artifacts to a clean image
 FROM public.ecr.aws/lambda/provided:al2
 
-COPY --from=builder /build/target/x86_64-unknown-linux-musl/release/bootstrap /bootstrap
+COPY --from=builder /build/target/x86_64-unknown-linux-gnu/release/bootstrap /bootstrap
 
 ENTRYPOINT ["/bootstrap"]
