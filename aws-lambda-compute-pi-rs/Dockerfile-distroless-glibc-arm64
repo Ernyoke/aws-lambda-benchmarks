@@ -1,6 +1,6 @@
 ARG FUNCTION_DIR="/function"
 
-FROM cgr.dev/chainguard/rust:latest-dev AS builder
+FROM rust:1.84-bullseye AS builder
 
 WORKDIR /build
 
@@ -12,14 +12,12 @@ ADD src src
 # Docker Buildkit required
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/home/root/app/target \
-    rustup install stable && \
-    rustup default stable && \
-    rustup target add x86_64-unknown-linux-gnu && \
-    cargo build --release --target x86_64-unknown-linux-gnu
+    rustup target add aarch64-unknown-linux-musl && \
+    cargo build --release --target aarch64-unknown-linux-musl
 
 # copy artifacts to a clean image
-FROM cgr.dev/chainguard/glibc-dynamic:latest
+FROM gcr.io/distroless/cc:latest-arm64
 
-COPY --from=builder /build/target/x86_64-unknown-linux-gnu/release/bootstrap bootstrap
+COPY --from=builder /build/target/aarch64-unknown-linux-musl/release/bootstrap bootstrap
 
 ENTRYPOINT [ "./bootstrap" ]

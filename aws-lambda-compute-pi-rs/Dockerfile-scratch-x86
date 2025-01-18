@@ -18,12 +18,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 # copy artifacts to a clean image
 FROM scratch
 
-# Include global arg in this stage of the build
-ARG FUNCTION_DIR
-
-# Set working directory to function root directory
-WORKDIR ${FUNCTION_DIR}
-
 COPY --from=builder /build/target/x86_64-unknown-linux-musl/release/bootstrap bootstrap
 
 ENTRYPOINT [ "./bootstrap" ]
