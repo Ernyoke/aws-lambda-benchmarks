@@ -6,17 +6,17 @@ function generate_remote_tag() {
     TAG="$AWS_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/compute-pi-rst-$1"
 }
 
-# IMAGE_NAME="chainguard-glibc-x86"
-# docker buildx build --provenance=false --progress=plain --platform linux/x86_64 -t $IMAGE_NAME -f Dockerfile-chainguard-glibc-x86 .
-# generate_remote_tag $IMAGE_NAME
-# docker tag $IMAGE_NAME $TAG
-# docker push $TAG
+IMAGE_NAME="chainguard-glibc-x86"
+docker buildx build --provenance=false --progress=plain --platform linux/x86_64 -t $IMAGE_NAME -f Dockerfile-chainguard-glibc-x86 .
+generate_remote_tag $IMAGE_NAME
+docker tag $IMAGE_NAME $TAG
+docker push $TAG
 
-# IMAGE_NAME="chainguard-musl-x86"
-# docker buildx build --provenance=false --progress=plain --platform linux/x86_64 -t $IMAGE_NAME -f Dockerfile-chainguard-musl-x86 .
-# generate_remote_tag $IMAGE_NAME
-# docker tag $IMAGE_NAME $TAG
-# docker push $TAG
+IMAGE_NAME="chainguard-musl-x86"
+docker buildx build --provenance=false --progress=plain --platform linux/x86_64 -t $IMAGE_NAME -f Dockerfile-chainguard-musl-x86 .
+generate_remote_tag $IMAGE_NAME
+docker tag $IMAGE_NAME $TAG
+docker push $TAG
 
 IMAGE_NAME="chainguard-glibc-arm64"
 docker buildx build --provenance=false --progress=plain --platform linux/arm64 -t $IMAGE_NAME -f Dockerfile-chainguard-glibc-arm64 .
