@@ -13,10 +13,9 @@ def generate_digits_of_pi():
         t *= u
         i += 1
 
-def handler(event):
+def handler(event, context):
     iter_pi = generate_digits_of_pi()
     digits = [next(iter_pi) for _ in range(event["digits"])]
-    return {
-        "digits": event["digits"],
-        "pi": "".join(map(str, digits))
-    }
+    pi = "".join(map(str, digits))
+    print(f"PI: {pi}")
+    return None

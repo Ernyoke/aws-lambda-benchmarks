@@ -1,7 +1,7 @@
 # Define custom function directory
 ARG FUNCTION_DIR="/function"
 
-FROM python:3.12 AS build-image
+FROM python:3.11 AS build-image
 
 # Include global arg in this stage of the build
 ARG FUNCTION_DIR
@@ -14,7 +14,7 @@ COPY . ${FUNCTION_DIR}
 RUN pip install -r ${FUNCTION_DIR}/requirements.txt --target ${FUNCTION_DIR}
 
 # Use a slim version of the base Python image to reduce the final image size
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.11
 
 # Include global arg in this stage of the build
 ARG FUNCTION_DIR
