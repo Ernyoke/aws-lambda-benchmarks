@@ -1,0 +1,16 @@
+FROM rust:1.84-bullseye AS builder
+
+WORKDIR /build
+
+ADD Cargo.toml Cargo.toml
+ADD Cargo.lock Cargo.lock
+ADD src src
+
+RUN rustup target add x86_64-unknown-linux-gnu && cargo build --release --target x86_64-unknown-linux-gnu
+
+# copy artifacts to a clean image
+FROM public.ecr.aws/lambda/provided:al2
+
+COPY --from=builder /build/target/x86_64-unknown-linux-gnu/release/bootstrap /bootstrap
+
+ENTRYPOINT ["/bootstrap"]

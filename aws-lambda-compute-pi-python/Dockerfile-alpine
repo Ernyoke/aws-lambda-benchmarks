@@ -1,0 +1,51 @@
+ARG FUNCTION_DIR="/home/app/"
+ARG RUNTIME_VERSION="3.11"
+ARG DISTRO_VERSION="3.21"
+
+# Stage 1 - bundle base image + runtime
+# Grab a fresh copy of the image and install GCC
+FROM python:${RUNTIME_VERSION}-alpine${DISTRO_VERSION} AS python-alpine
+# Install GCC (Alpine uses musl but we compile and link dependencies with GCC)
+RUN apk add --no-cache libstdc++
+
+# Stage 2 - build function and dependencies
+FROM python-alpine AS build-image
+
+# Needed for libexecinfo-dev. Alternatives such as libunwind may build awslambdaric, but the function wont execute in the final runtime image.
+# Tanks https://stackoverflow.com/questions/77518311/dockerfile-for-node16-alpine-in-aws-lambda
+RUN apk add --no-cache --update --repository=https://dl-cdn.alpinelinux.org/alpine/v3.16/main/ libexecinfo-dev
+
+# Install aws-lambda-cpp build dependencies
+RUN apk add --no-cache \
+    build-base \
+    libtool \
+    autoconf \
+    automake \
+    libexecinfo-dev \
+    make \
+    cmake \
+    libcurl
+
+ARG FUNCTION_DIR
+ARG RUNTIME_VERSION
+
+RUN mkdir -p ${FUNCTION_DIR}
+
+COPY . ${FUNCTION_DIR}
+
+RUN python${RUNTIME_VERSION} -m pip install awslambdaric --target ${FUNCTION_DIR}
+RUN python${RUNTIME_VERSION} -m pip install -r ${FUNCTION_DIR}requirements.txt --target ${FUNCTION_DIR}
+
+# Stage 3 - final runtime image
+# Grab a fresh copy of the Python image
+FROM python-alpine
+
+ARG FUNCTION_DIR
+
+WORKDIR ${FUNCTION_DIR}
+
+COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
+
+ENTRYPOINT [ "python", "-m", "awslambdaric"]
+
+CMD [ "main.handler" ]

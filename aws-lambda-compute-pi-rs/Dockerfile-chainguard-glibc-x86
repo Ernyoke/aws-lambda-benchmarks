@@ -1,0 +1,25 @@
+ARG FUNCTION_DIR="/function"
+
+FROM cgr.dev/chainguard/rust:latest-dev AS builder
+
+WORKDIR /build
+
+ADD Cargo.toml Cargo.toml
+ADD Cargo.lock Cargo.lock
+ADD src src
+
+# Cache build folders, see: https://stackoverflow.com/a/60590697/7661119
+# Docker Buildkit required
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/home/root/app/target \
+    rustup install stable && \
+    rustup default stable && \
+    rustup target add x86_64-unknown-linux-gnu && \
+    cargo build --release --target x86_64-unknown-linux-gnu
+
+# copy artifacts to a clean image
+FROM cgr.dev/chainguard/glibc-dynamic:latest
+
+COPY --from=builder /build/target/x86_64-unknown-linux-gnu/release/bootstrap bootstrap
+
+ENTRYPOINT [ "./bootstrap" ]
